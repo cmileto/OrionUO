@@ -46,8 +46,6 @@ private:
 	deque<CIndexObject*> m_UsedLightList;
 
 	UCHAR_LIST m_AnimData;
-
-	void LoadClientConfig();
 	void LoadAutoLoginNames();
 
 	void LoadTiledata(const int &landSize, const int &staticsSize);
@@ -108,6 +106,8 @@ public:
 	~COrion();
 
 	static unsigned long long CreateHash(string s);
+
+	void LoadClientConfig();
 
 	//Данные из тайлдаты по ландшафту
 	vector<LAND_TILES> m_LandData;

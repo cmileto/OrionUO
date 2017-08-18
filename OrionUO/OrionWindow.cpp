@@ -83,6 +83,9 @@ void COrionWindow::SetRenderTimerDelay(const int &delay)
 //----------------------------------------------------------------------------------
 bool COrionWindow::OnCreate()
 {
+	LOG("Load client config.\n");
+	g_Orion.LoadClientConfig();
+
 	WISPFUN_DEBUG("c195_f2");
 	if (!g_GL.Install())
 	{

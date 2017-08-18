@@ -291,9 +291,6 @@ bool COrion::Install()
 
 	CreateDirectoryA(g_App.FilePath("snapshots").c_str(), NULL);
 
-	LOG("Load client config.\n");
-	LoadClientConfig();
-
 	if (g_PacketManager.ClientVersion >= CV_305D)
 	{
 		CGumpSpellbook::m_SpellReagents1[4] = "Sulfurous ash"; //Magic Arrow
@@ -973,7 +970,7 @@ void COrion::LoadClientConfig()
 		uchar dllVersion = file.ReadInt8();
 		uchar subVersion = 0;
 
-		if (dllVersion != 0xFE)
+		if (dllVersion != 0xFD)
 		{
 			g_OrionWindow.ShowMessage("Old version of Orion.dll detected!!!\nClient may be crashed in process!!!", "Warning!");
 			file.Move(-1);
@@ -988,7 +985,7 @@ void COrion::LoadClientConfig()
 
 		g_NetworkInit = (NETWORK_INIT_TYPE*)file.ReadUInt32LE();
 		g_NetworkAction = (NETWORK_ACTION_TYPE*)file.ReadUInt32LE();
-		if (dllVersion == 0xFE)
+		if (dllVersion == 0xFD || 0xFE)
 			g_NetworkPostAction = (NETWORK_POST_ACTION_TYPE*)file.ReadUInt32LE();
 		g_PluginInit = (PLUGIN_INIT_TYPE*)file.ReadUInt32LE();
 
