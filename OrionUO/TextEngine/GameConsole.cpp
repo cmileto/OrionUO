@@ -31,7 +31,13 @@ void CGameConsole::Send()
 	if (len)
 	{
 		SPEECH_TYPE speechType = ST_NORMAL;
+		ushort sendColor = g_ConfigManager.SpeechColor;
 		int offset = 0;
+
+		if (m_Type == GCTT_EMOTE)
+		{
+			m_Text = m_Text.replace(0, 2, L": *").append(L"*");
+		}
 
 		if (len > 1)
 		{
@@ -53,15 +59,18 @@ void CGameConsole::Send()
 				else if (m_Type == GCTT_EMOTE)
 				{
 					speechType = ST_EMOTE;
+					sendColor = g_ConfigManager.EmoteColor;
 					offset = 2;
 				}
 				else if (m_Type == GCTT_GUILD)
 				{
 					speechType = ST_GUILD_CHAT;
+					sendColor = g_ConfigManager.GuildMessageColor;
 					offset = 2;
 				}
 				else if (m_Type == GCTT_ALLIANCE)
 				{
+					sendColor = g_ConfigManager.AllianceMessageColor;
 					speechType = ST_ALLIANCE_CHAT;
 					offset = 2;
 				}
@@ -69,6 +78,7 @@ void CGameConsole::Send()
 				{
 					DWORD serial = 0;
 					offset = 1;
+					sendColor = g_ConfigManager.PartyMessageColor;
 
 					if (member != -1)
 						serial = g_Party.Member[member].Serial;
@@ -115,7 +125,7 @@ void CGameConsole::Send()
 
 		}
 
-		CPacketUnicodeSpeechRequest(Data() + offset, speechType, 3, g_ConfigManager.SpeechColor, (puchar)g_Language.c_str()).Send();
+		CPacketUnicodeSpeechRequest(Data() + offset, speechType, 3, sendColor, (puchar)g_Language.c_str()).Send();
 	}
 }
 //----------------------------------------------------------------------------------
@@ -178,23 +188,23 @@ wstring CGameConsole::IsSystemCommand(const wchar_t *text, int &len, int &member
 
 		if (m_Type == GCTT_NORMAL && !result.length())
 		{
-			result = L"Party:";
+			result = g_ClilocManager.Cliloc(g_Language)->GetW(3002009, false, "Party:");
 			m_Type = GCTT_PARTY;
 		}
 	}
 	else if (!memcmp(&text[0], g_ConsolePrefix[GCTT_YELL].c_str(), 4)) //Yell
 	{
-		result = L"Yell:";
+		result = g_ClilocManager.Cliloc(g_Language)->GetW(3002010, false, "Yell:");
 		m_Type = GCTT_YELL;
 	}
 	else if (!memcmp(&text[0], g_ConsolePrefix[GCTT_WHISPER].c_str(), 4)) //Whisper
 	{
-		result = L"Whisper:";
+		result = g_ClilocManager.Cliloc(g_Language)->GetW(3002009, false, "Whisper:");
 		m_Type = GCTT_WHISPER;
 	}
 	else if (!memcmp(&text[0], g_ConsolePrefix[GCTT_EMOTE].c_str(), 4)) //Emote
 	{
-		result = L"Emote:";
+		result = g_ClilocManager.Cliloc(g_Language)->GetW(3002008, false, "Emote:");
 		m_Type = GCTT_EMOTE;
 	}
 	else if (g_Player->Graphic == 0x03DB && (*text == L'=' || *text == g_ConsolePrefix[GCTT_C][0])) //C
