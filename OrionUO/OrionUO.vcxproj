@@ -162,6 +162,7 @@ xcopy /y /d  "$(SolutionDir)debug_bin\Orion.dll" "$(ProjectDir)"
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>CrashRpt1403.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y /d  "$(SolutionDir)bin\bass.dll" "$(OutDir)"
@@ -231,6 +232,7 @@ xcopy /y /d  "$(SolutionDir)bin\Orion.dll" "$(ProjectDir)"
     <ClInclude Include="CommonInterfaces.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="Container.h" />
+    <ClInclude Include="CrashRpt.h" />
     <ClInclude Include="DefinitionMacro.h" />
     <ClInclude Include="EnumList.h" />
     <ClInclude Include="ExceptionFilter.h" />

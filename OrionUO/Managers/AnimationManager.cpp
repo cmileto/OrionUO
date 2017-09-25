@@ -1165,7 +1165,7 @@ bool CAnimationManager::LoadDirectionGroup(CTextureAnimationDirection &direction
 	SetData((puchar)direction.Address, direction.Size);
 
 	pushort palette = (pushort)m_Start;
-	Move(sizeof(ushort[256])); //Palette
+	Move(sizeof(ushort[258])); //Palette
 	puchar dataStart = m_Ptr;
 
 	int frameCount = ReadUInt32LE();

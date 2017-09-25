@@ -10,6 +10,8 @@
 #include "stdafx.h"
 #include <tchar.h>
 #include <iostream>
+#include "CrashRpt.h"
+#include <cassert>
 //----------------------------------------------------------------------------------
 COrionWindow g_OrionWindow;
 //----------------------------------------------------------------------------------
@@ -64,6 +66,24 @@ void COrionWindow::SetRenderTimerDelay(const int &delay)
 bool COrionWindow::OnCreate()
 {
 	LOG("Load client config.\n");
+	// Define CrashRpt configuration parameters
+	/*CR_INSTALL_INFO info;
+	memset(&info, 0, sizeof(CR_INSTALL_INFO));
+	info.cb = sizeof(CR_INSTALL_INFO);
+	info.pszAppName = L"Orion";
+	info.pszAppVersion = L"0.0.0.9";
+	info.pszUrl = L"http://137.74.199.49/crashfix/index.php/crashReport/uploadExternal.";
+	info.uPriorities[CR_HTTP] = 1;  // First try send report over HTTP 
+	info.uPriorities[CR_SMTP] = CR_NEGATIVE_PRIORITY;  // Second try send report over SMTP  
+	info.uPriorities[CR_SMAPI] = CR_NEGATIVE_PRIORITY; // Third try send report over Simple MAPI    
+	// Install all available exception handlers
+	info.dwFlags |= CR_INST_ALL_POSSIBLE_HANDLERS | CR_INST_APP_RESTART;
+
+	// Install crash reporting
+
+	CrAutoInstallHelper cr_install_helper(&info);
+	// Check that installed OK
+	assert(cr_install_helper.m_nInstallStatus == 0);*/
 	g_Orion.LoadClientConfig();
 
 	WISPFUN_DEBUG("c195_f2");

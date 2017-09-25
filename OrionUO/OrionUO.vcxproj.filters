@@ -798,6 +798,9 @@
     <ClInclude Include="Managers\CorpseManager.h">
       <Filter>Header Files\Managers</Filter>
     </ClInclude>
+    <ClInclude Include="CrashRpt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="OrionUO.cpp">
