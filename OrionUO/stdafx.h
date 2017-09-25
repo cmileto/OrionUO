@@ -64,6 +64,7 @@
 #include "EnumList.h"
 #include "BaseQueue.h"
 #include "Constants.h"
+#include "DateTimeStamp.h"
 
 #include "GLEngine/GLTexture.h"
 #include "GLEngine/GLTextTexture.h"
@@ -82,6 +83,8 @@ class CGump;
 #include "ClickObject.h"
 #include "CommonInterfaces.h"
 #include "Container.h"
+#include "ContainerStack.h"
+#include "UseItemsList.h"
 #include "ExceptionFilter.h"
 #include "ImageBounds.h"
 #include "MulStruct.h"
@@ -141,6 +144,7 @@ class CGump;
 #include "GUI/GUI.h"
 
 #include "Gumps/Gump.h"
+#include "Game objects/CustomHouseObjects.h"
 #include "Game objects/MapObject.h"
 #include "Game objects/RenderStaticObject.h"
 #include "Game objects/LandObject.h"
@@ -168,6 +172,7 @@ class CGump;
 #include "Gumps/GumpCombatBook.h"
 #include "Gumps/GumpConsoleType.h"
 #include "Gumps/GumpContainer.h"
+#include "Gumps/GumpCustomHouse.h"
 #include "Gumps/GumpDrag.h"
 #include "Gumps/GumpSelectColor.h"
 #include "Gumps/GumpDye.h"

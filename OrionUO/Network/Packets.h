@@ -516,5 +516,53 @@ public:
 	CPacketWalkRequest(const uchar &direction, const uchar &sequence, const uint &fastWalkKey);
 };
 //----------------------------------------------------------------------------------
+class CPacketBackupCustomHouse : public CPacket
+{
+public:
+	CPacketBackupCustomHouse(const uchar &index);
+};
+//----------------------------------------------------------------------------------
+class CPacketRestoreCustomHouse : public CPacket
+{
+public:
+	CPacketRestoreCustomHouse(const uchar &index);
+};
+//----------------------------------------------------------------------------------
+class CPacketCommitCustomHouse : public CPacket
+{
+public:
+	CPacketCommitCustomHouse(const uchar &index);
+};
+//----------------------------------------------------------------------------------
+class CPacketExitFromCustomHouseBuilding : public CPacket
+{
+public:
+	CPacketExitFromCustomHouseBuilding(const uchar &index);
+};
+//----------------------------------------------------------------------------------
+class CPacketGoToFloorCustomHouse : public CPacket
+{
+public:
+	CPacketGoToFloorCustomHouse(const uchar &floor, const uchar &index);
+};
+//----------------------------------------------------------------------------------
+class CPacketSyncCustomHouse : public CPacket
+{
+public:
+	CPacketSyncCustomHouse(const uchar &index);
+};
+//----------------------------------------------------------------------------------
+class CPacketClearCustomHouse : public CPacket
+{
+public:
+	CPacketClearCustomHouse(const uchar &index);
+};
+//----------------------------------------------------------------------------------
+class CPacketRevertCustomHouse : public CPacket
+{
+public:
+	CPacketRevertCustomHouse(const uchar &index);
+};
+//----------------------------------------------------------------------------------
 #endif
 //----------------------------------------------------------------------------------

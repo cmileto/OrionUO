@@ -160,7 +160,7 @@ void CGumpSecureTrading::UpdateContent()
 			bool doubleDraw = false;
 			ushort graphic = item->GetDrawGraphic(doubleDraw);
 
-			CGUITilepicHightlighted *dataObject = (CGUITilepicHightlighted*)m_MyDataBox->Add(new CGUITilepicHightlighted(item->Serial, graphic, item->Color, 0x0035, 45 + item->X, 70 + item->Y, doubleDraw));
+			CGUITilepicHightlighted *dataObject = (CGUITilepicHightlighted*)m_MyDataBox->Add(new CGUITilepicHightlighted(item->Serial, graphic, item->Color & 0x3FFF, 0x0035, 45 + item->X, 70 + item->Y, doubleDraw));
 			dataObject->PartialHue = IsPartialHue(g_Orion.GetStaticFlags(graphic));
 
 			if (dataObject->Y >= 150)
@@ -180,7 +180,7 @@ void CGumpSecureTrading::UpdateContent()
 			bool doubleDraw = false;
 			ushort graphic = item->GetDrawGraphic(doubleDraw);
 
-			CGUITilepicHightlighted *dataObject = (CGUITilepicHightlighted*)m_OpponentDataBox->Add(new CGUITilepicHightlighted(item->Serial, graphic, item->Color, 0x0035, 192 + item->X, 70 + item->Y, doubleDraw));
+			CGUITilepicHightlighted *dataObject = (CGUITilepicHightlighted*)m_OpponentDataBox->Add(new CGUITilepicHightlighted(item->Serial, graphic, item->Color & 0x3FFF, 0x0035, 192 + item->X, 70 + item->Y, doubleDraw));
 			dataObject->PartialHue = IsPartialHue(g_Orion.GetStaticFlags(graphic));
 
 			if (dataObject->Y >= 150)
@@ -274,7 +274,7 @@ void CGumpSecureTrading::OnLeftMouseButtonUp()
 
 		if (g_Orion.PolygonePixelsInXY(x + 45, y + 70, 110, 80))
 		{
-			if (GetTopObjDistance(g_Player, g_World->FindWorldObject(m_ID2)) < 3)
+			if (GetTopObjDistance(g_Player, g_World->FindWorldObject(m_ID2)) <= DRAG_ITEMS_DISTANCE)
 			{
 				x = g_MouseManager.Position.X - x - 45;
 				y = g_MouseManager.Position.Y - y - 70;
@@ -308,6 +308,11 @@ void CGumpSecureTrading::OnLeftMouseButtonUp()
 			else
 				g_Orion.PlaySoundEffect(0x0051);
 		}
+	}
+	else if (g_Target.IsTargeting() && g_World->FindWorldObject(g_SelectedObject.Serial) != NULL)
+	{
+		g_Target.SendTargetObject(g_SelectedObject.Serial);
+		g_MouseManager.CancelDoubleClick = true;
 	}
 }
 //----------------------------------------------------------------------------------

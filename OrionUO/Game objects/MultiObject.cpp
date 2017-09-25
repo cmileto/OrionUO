@@ -9,8 +9,9 @@
 //----------------------------------------------------------------------------------
 #include "stdafx.h"
 //----------------------------------------------------------------------------------
-CMultiObject::CMultiObject(const ushort &graphic, const short &x, const short &y, const char &z, const uint &flags)
-: CRenderStaticObject(ROT_MULTI_OBJECT, 0, graphic, 0, x, y, z), m_OnTarget(flags == 2)
+CMultiObject::CMultiObject(const ushort &graphic, const short &x, const short &y, const char &z, const uint &flags, const bool &isCustomHouseMulti)
+: CRenderStaticObject(ROT_MULTI_OBJECT, 0, graphic, 0, x, y, z), m_OnTarget(flags == 2),
+m_IsCustomHouseMulti(isCustomHouseMulti)
 {
 	WISPFUN_DEBUG("c25_f1");
 	m_OriginalGraphic = graphic;
@@ -53,16 +54,16 @@ void CMultiObject::UpdateGraphicBySeason()
 void CMultiObject::Draw(const int &x, const int &y)
 {
 	WISPFUN_DEBUG("c25_f3");
-	if (m_OnTarget) //Мульти на таргете
-	{
 #if UO_DEBUG_INFO!=0
-		g_RenderedObjectsCountInGameWindow++;
+	g_RenderedObjectsCountInGameWindow++;
 #endif
 
+	if (m_OnTarget) //Мульти на таргете
+	{
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR);
 
-		g_Orion.DrawStaticArt(m_Graphic, m_Color, x, y, m_Z);
+		g_Orion.DrawStaticArt(m_Graphic, m_Color, x, y);
 
 		glDisable(GL_BLEND);
 	}

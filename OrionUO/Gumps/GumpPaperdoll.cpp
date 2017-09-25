@@ -364,7 +364,7 @@ void CGumpPaperdoll::PrepareContent()
 
 	if (g_SelectedObject.Gump == this && g_ObjectInHand.Enabled && g_ObjectInHand.TiledataPtr->AnimID)
 	{
-		if (obj->FindLayer(g_ObjectInHand.TiledataPtr->Quality) == NULL)
+		if (obj->FindLayer(g_ObjectInHand.TiledataPtr->Layer) == NULL)
 		{
 			if (!m_WantTransparentContent)
 			{
@@ -405,13 +405,7 @@ void CGumpPaperdoll::UpdateContent()
 
 	CGUIGumppic *bodyGumppic = NULL;
 
-	ushort color = obj->Color;
-
-	if (color & 0x8000)
-		color &= 0x7FFF;
-
-	if (color & 0x4000)
-		color &= 0x3FFF;
+	ushort color = obj->Color & 0x3FFF;
 
 	if (obj->Graphic == 0x0191 || obj->Graphic == 0x0193)
 	{
@@ -540,14 +534,14 @@ void CGumpPaperdoll::UpdateContent()
 						cOfs = MALE_GUMP_OFFSET;
 
 					bodyGumppic = (CGUIGumppic*)m_DataBox->Add(new CGUIGumppic(id + cOfs, 8, 19));
-					bodyGumppic->Color = equipment->Color;
+					bodyGumppic->Color = equipment->Color & 0x3FFF;
 					bodyGumppic->PartialHue = equipment->IsPartialHue();
 					bodyGumppic->Serial = ID_GP_ITEMS + UsedLayers[i];
 				}
 			}
-			else if (m_WantTransparentContent && g_ObjectInHand.Enabled && UsedLayers[i] == g_ObjectInHand.TiledataPtr->Quality && g_ObjectInHand.TiledataPtr->AnimID)
+			else if (m_WantTransparentContent && g_ObjectInHand.Enabled && UsedLayers[i] == g_ObjectInHand.TiledataPtr->Layer && g_ObjectInHand.TiledataPtr->AnimID)
 			{
-				equipment = obj->FindLayer(g_ObjectInHand.TiledataPtr->Quality);
+				equipment = obj->FindLayer(g_ObjectInHand.TiledataPtr->Layer);
 
 				if (equipment == NULL)
 				{
@@ -569,7 +563,7 @@ void CGumpPaperdoll::UpdateContent()
 					m_DataBox->Add(new CGUIAlphaBlending(true, 0.7f));
 
 					bodyGumppic = (CGUIGumppic*)m_DataBox->Add(new CGUIGumppic(id + cOfs, 8, 19));
-					bodyGumppic->Color = g_ObjectInHand.Color;
+					bodyGumppic->Color = g_ObjectInHand.Color & 0x3FFF;
 					bodyGumppic->PartialHue = (g_ObjectInHand.Color & 0x8000);
 
 					m_DataBox->Add(new CGUIAlphaBlending(false, 0.0f));
@@ -633,7 +627,7 @@ void CGumpPaperdoll::UpdateContent()
 							else
 								tileY -= rect.Position.Y + tileOffsetY;
 
-							m_DataBox->Add(new CGUITilepicScaled(equipment->Graphic, equipment->Color, tileX, tileY, width, height));
+							m_DataBox->Add(new CGUITilepicScaled(equipment->Graphic, equipment->Color & 0x3FFF, tileX, tileY, width, height));
 
 							drawed = true;
 						}
@@ -643,7 +637,7 @@ void CGumpPaperdoll::UpdateContent()
 					{
 						tileX -= rect.Position.X - tileOffsetX;
 						tileY -= rect.Position.Y - tileOffsetY;
-						CGUITilepic *pic = new CGUITilepic(equipment->Graphic, equipment->Color, tileX, tileY);
+						CGUITilepic *pic = new CGUITilepic(equipment->Graphic, equipment->Color & 0x3FFF, tileX, tileY);
 						pic->PartialHue = equipment->IsPartialHue();
 						m_DataBox->Add(pic);
 						pic->Serial = slotSerial;
@@ -668,7 +662,7 @@ void CGumpPaperdoll::UpdateContent()
 			bpX = 2;
 
 		bodyGumppic = (CGUIGumppic*)m_DataBox->Add(new CGUIGumppic(equipment->AnimID + 50000, bpX, 19));
-		bodyGumppic->Color = equipment->Color;
+		bodyGumppic->Color = equipment->Color & 0x3FFF;
 		bodyGumppic->PartialHue = equipment->IsPartialHue();
 		bodyGumppic->Serial = ID_GP_ITEMS + OL_BACKPACK;
 		bodyGumppic->MoveOnDrag = true;
@@ -837,15 +831,14 @@ void CGumpPaperdoll::OnLeftMouseButtonUp()
 	//Что-то в руке
 	if ((!serial || serial >= ID_GP_ITEMS) && g_ObjectInHand.Enabled)
 	{
+		int layer = serial - ID_GP_ITEMS;
 		bool canWear = true;
 
-		if (m_Serial != g_PlayerSerial && GetDistance(g_Player, container) >= 3)
+		if (layer != OL_BACKPACK && m_Serial != g_PlayerSerial && GetDistance(g_Player, container) >= DRAG_ITEMS_DISTANCE)
 			canWear = false;
 
 		if (canWear && container != NULL)
 		{
-			int layer = serial - ID_GP_ITEMS;
-
 			if (layer == OL_BACKPACK) //Ткнули на пак
 			{
 				CGameItem *equipment = container->FindLayer(layer);
@@ -867,7 +860,7 @@ void CGumpPaperdoll::OnLeftMouseButtonUp()
 			}
 			else if (IsWearable(g_ObjectInHand.TiledataPtr->Flags)) //Можно одевать
 			{
-				CGameItem *equipment = container->FindLayer(g_ObjectInHand.TiledataPtr->Quality);
+				CGameItem *equipment = container->FindLayer(g_ObjectInHand.TiledataPtr->Layer);
 
 				if (equipment == NULL) //На этом слое ничего нет
 				{

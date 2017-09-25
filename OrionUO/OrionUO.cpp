@@ -192,7 +192,8 @@ bool COrion::Install()
 	LOG("COrion::Install()\n");
 	SetUnhandledExceptionFilter(OrionUnhandledExceptionFilter);
 
-	CRASHLOG("Orion version is: %s\n", g_App.GetFileVersion().c_str());
+	LOG("Orion version is: %s (build %s)\n", g_App.GetFileVersion().c_str(), GetBuildDateTimeStamp().c_str());
+	CRASHLOG("Orion version is: %s (build %s)\n", g_App.GetFileVersion().c_str(), GetBuildDateTimeStamp().c_str());
 
 	IFOR(i, 0, 256)
 	{
@@ -317,6 +318,8 @@ bool COrion::Install()
 
 		//return false;
 	}
+
+	LoadContaierOffsets();
 
 	g_CityManager.Init();
 
@@ -685,13 +688,11 @@ void COrion::CheckStaticTileFilterFiles()
 
 	filePath = path + "\\vegetation.txt";
 	WISP_LOGGER::CLogger vegetationFile;
+
 	if (!PathFileExistsA(filePath.c_str()))
 	{
-
-
 		vegetationFile.Init(filePath);
 		vegetationFile.Print("#Format: graphic\n");
-
 
 		static const int vegetationTilesCount = 178;
 
@@ -724,6 +725,7 @@ void COrion::CheckStaticTileFilterFiles()
 			{
 				continue;
 			}
+
 			vegetationFile.Print("0x%04X\n", vegetationTiles[i]);
 		}
 			
@@ -781,7 +783,9 @@ void COrion::CheckStaticTileFilterFiles()
 				default:
 					break;
 			}
+
 			__int64 flags = g_Orion.GetStaticFlags(graphic);
+
 			if (!(flags & 0x00000040))
 			{
 				vegetationFile.Print("0x%04X\n", graphic);
@@ -843,6 +847,88 @@ void COrion::CheckStaticTileFilterFiles()
 		if (strings.size() >= 1)
 			m_StaticTilesFilterFlags[TextToGraphic(strings[0].c_str())] |= STFF_VEGETATION;
 	}
+}
+//----------------------------------------------------------------------------------
+void COrion::LoadContaierOffsets()
+{
+	string path = g_App.FilePath("OrionData");
+	CreateDirectoryA(path.c_str(), NULL);
+
+	string filePath = path + "\\containers.txt";
+
+	if (!PathFileExistsA(filePath.c_str()))
+	{
+		//												Gump   OpenSnd  CloseSnd					minX minY maxX maxY
+		g_ContainerOffset.push_back(CContainerOffset(0x0009, 0x0000, 0x0000, CContainerOffsetRect(20, 85, 124, 196))); //corpse
+		g_ContainerOffset.push_back(CContainerOffset(0x003C, 0x0048, 0x0058, CContainerOffsetRect(44, 65, 186, 159)));
+		g_ContainerOffset.push_back(CContainerOffset(0x003D, 0x0048, 0x0058, CContainerOffsetRect(29, 34, 137, 128)));
+		g_ContainerOffset.push_back(CContainerOffset(0x003E, 0x002F, 0x002E, CContainerOffsetRect(33, 36, 142, 148)));
+		g_ContainerOffset.push_back(CContainerOffset(0x003F, 0x004F, 0x0058, CContainerOffsetRect(19, 47, 182, 123)));
+		g_ContainerOffset.push_back(CContainerOffset(0x0040, 0x002D, 0x002C, CContainerOffsetRect(16, 51, 150, 140)));
+		g_ContainerOffset.push_back(CContainerOffset(0x0041, 0x004F, 0x0058, CContainerOffsetRect(35, 38, 145, 116)));
+		g_ContainerOffset.push_back(CContainerOffset(0x0042, 0x002D, 0x002C, CContainerOffsetRect(18, 105, 162, 178)));
+		g_ContainerOffset.push_back(CContainerOffset(0x0043, 0x002D, 0x002C, CContainerOffsetRect(16, 51, 181, 124)));
+		g_ContainerOffset.push_back(CContainerOffset(0x0044, 0x002D, 0x002C, CContainerOffsetRect(20, 10, 170, 100)));
+		g_ContainerOffset.push_back(CContainerOffset(0x0048, 0x002F, 0x002E, CContainerOffsetRect(16, 10, 154, 94)));
+		g_ContainerOffset.push_back(CContainerOffset(0x0049, 0x002D, 0x002C, CContainerOffsetRect(18, 105, 162, 178)));
+		g_ContainerOffset.push_back(CContainerOffset(0x004A, 0x002D, 0x002C, CContainerOffsetRect(18, 105, 162, 178)));
+		g_ContainerOffset.push_back(CContainerOffset(0x004B, 0x002D, 0x002C, CContainerOffsetRect(16, 51, 184, 124)));
+		g_ContainerOffset.push_back(CContainerOffset(0x004C, 0x002D, 0x002C, CContainerOffsetRect(46, 74, 196, 184)));
+		g_ContainerOffset.push_back(CContainerOffset(0x004D, 0x002F, 0x002E, CContainerOffsetRect(76, 12, 140, 68)));
+		g_ContainerOffset.push_back(CContainerOffset(0x004E, 0x002D, 0x002C, CContainerOffsetRect(24, 96, 140, 152))); //bugged
+		g_ContainerOffset.push_back(CContainerOffset(0x004F, 0x002D, 0x002C, CContainerOffsetRect(24, 96, 140, 152))); //bugged
+		g_ContainerOffset.push_back(CContainerOffset(0x0051, 0x002F, 0x002E, CContainerOffsetRect(16, 10, 154, 94)));
+		g_ContainerOffset.push_back(CContainerOffset(0x091A, 0x0000, 0x0000, CContainerOffsetRect(1, 13, 260, 199))); //game board
+		g_ContainerOffset.push_back(CContainerOffset(0x092E, 0x0000, 0x0000, CContainerOffsetRect(1, 13, 260, 199))); //backgammon game
+		g_ContainerOffset.push_back(CContainerOffset(0x0104, 0x002F, 0x002E, CContainerOffsetRect(0, 20, 168, 115)));
+		g_ContainerOffset.push_back(CContainerOffset(0x0105, 0x002F, 0x002E, CContainerOffsetRect(0, 20, 168, 115)));
+		g_ContainerOffset.push_back(CContainerOffset(0x0106, 0x002F, 0x002E, CContainerOffsetRect(0, 20, 168, 115)));
+		g_ContainerOffset.push_back(CContainerOffset(0x0107, 0x002F, 0x002E, CContainerOffsetRect(0, 20, 168, 115)));
+		g_ContainerOffset.push_back(CContainerOffset(0x0108, 0x004F, 0x0058, CContainerOffsetRect(0, 35, 150, 105)));
+		g_ContainerOffset.push_back(CContainerOffset(0x0109, 0x002F, 0x002E, CContainerOffsetRect(0, 20, 175, 105)));
+		g_ContainerOffset.push_back(CContainerOffset(0x010A, 0x002F, 0x002E, CContainerOffsetRect(0, 20, 175, 105)));
+		g_ContainerOffset.push_back(CContainerOffset(0x010B, 0x002F, 0x002E, CContainerOffsetRect(0, 20, 175, 105)));
+		g_ContainerOffset.push_back(CContainerOffset(0x010C, 0x002F, 0x002E, CContainerOffsetRect(0, 20, 168, 115)));
+		g_ContainerOffset.push_back(CContainerOffset(0x010D, 0x002F, 0x002E, CContainerOffsetRect(0, 20, 168, 115)));
+		g_ContainerOffset.push_back(CContainerOffset(0x010E, 0x002F, 0x002E, CContainerOffsetRect(0, 20, 168, 115)));
+	}
+	else
+	{
+		WISP_FILE::CTextFileParser parser(filePath, " \t", "#;//", "");
+
+		while (!parser.IsEOF())
+		{
+			STRING_LIST strings = parser.ReadTokens();
+
+			if (strings.size() >= 7)
+			{
+				ushort gump = TextToGraphic(strings[0].c_str());
+				ushort openSound = TextToGraphic(strings[1].c_str());
+				ushort closeSound = TextToGraphic(strings[2].c_str());
+				ushort minX = atoi(strings[3].c_str());
+				ushort minY = atoi(strings[4].c_str());
+				ushort maxX = atoi(strings[5].c_str());
+				ushort maxY = atoi(strings[6].c_str());
+
+				g_ContainerOffset.push_back(CContainerOffset(gump, openSound, closeSound, CContainerOffsetRect(minX, minY, maxX, maxY)));
+			}
+		}
+	}
+
+	if (!PathFileExistsA(filePath.c_str()))
+	{
+		WISP_LOGGER::CLogger file;
+
+		file.Init(filePath);
+		file.Print("#Format: gump open_sound close_sound minX minY maxX maxY\n");
+
+		for (const CContainerOffset &item : g_ContainerOffset)
+		{
+			file.Print("0x%04X 0x%04X 0x%04X %i %i %i %i\n", item.Gump, item.OpenSound, item.CloseSound, item.Rect.MinX, item.Rect.MinY, item.Rect.MaxX, item.Rect.MaxY);
+		}
+	}
+
+	LOG("g_ContainerOffset.size()=%i\n", g_ContainerOffset.size());
 }
 //----------------------------------------------------------------------------------
 void COrion::LoadClientConfig()
@@ -963,7 +1049,7 @@ void COrion::ProcessDelayedClicks()
 
 				//if (serial < 0x40000000)
 				{
-					if (!g_ConfigManager.HoldShiftForContextMenus || g_ShiftPressed)
+					if (g_PopupEnabled && (!g_ConfigManager.HoldShiftForContextMenus || g_ShiftPressed))
 						CPacketRequestPopupMenu(serial).Send();
 				}
 			}
@@ -2386,7 +2472,7 @@ int COrion::ValueInt(const VALUE_KEY_INT &key, int value)
 		case VKI_USED_LAYER:
 		{
 			if (value >= 0 && value < (int)m_StaticData.size())
-				value = m_StaticData[value].Quality;
+				value = m_StaticData[value].Layer;
 
 			break;
 		}
@@ -2937,15 +3023,11 @@ void COrion::LoadTiledata(const int &landSize, const int &staticsSize)
 					tile.Flags = file.ReadInt64LE();
 
 				tile.Weight = file.ReadInt8();
-				tile.Quality = file.ReadInt8();
-				tile.Unknown = file.ReadInt16LE();
-				tile.Unknown1 = file.ReadInt8();
-				tile.Quality1 = file.ReadInt8();
+				tile.Layer = file.ReadInt8();
+				tile.Count = file.ReadInt32LE();
 				tile.AnimID = file.ReadInt16LE();
-				tile.Unknown2 = file.ReadInt8();
-				tile.Hue = file.ReadInt8();
-				tile.SittingOffset = file.ReadInt8();
-				tile.Unknown3 = file.ReadInt8();
+				tile.Hue = file.ReadInt16LE();
+				tile.LightIndex = file.ReadInt16LE();
 				tile.Height = file.ReadInt8();
 				tile.Name = file.ReadString(20);
 			}
@@ -3604,15 +3686,11 @@ void COrion::PatchFiles()
 						tile.Flags = file.ReadInt64LE();
 
 					tile.Weight = file.ReadInt8();
-					tile.Quality = file.ReadInt8();
-					tile.Unknown = file.ReadInt16LE();
-					tile.Unknown1 = file.ReadInt8();
-					tile.Quality1 = file.ReadInt8();
+					tile.Layer = file.ReadInt8();
+					tile.Count = file.ReadInt32LE();
 					tile.AnimID = file.ReadInt16LE();
-					tile.Unknown2 = file.ReadInt8();
-					tile.Hue = file.ReadInt8();
-					tile.SittingOffset = file.ReadInt8();
-					tile.Unknown3 = file.ReadInt8();
+					tile.Hue = file.ReadInt16LE();
+					tile.LightIndex = file.ReadInt16LE();
 					tile.Height = file.ReadInt8();
 					tile.Name = file.ReadString(20);
 				}
@@ -4488,13 +4566,13 @@ void COrion::DrawLandTexture(CLandObject *land, ushort color, const int &x, cons
 	ushort id = land->Graphic;
 
 	if (id == 2)
-		DrawLandArt(id, color, x, y, land->m_Rect.left / 4);
+		DrawLandArt(id, color, x, y);
 	else
 	{
 		CGLTexture *th = ExecuteTexture(id);
 
 		if (th == NULL)
-			DrawLandArt(id, color, x, y, land->m_Rect.left / 4);
+			DrawLandArt(id, color, x, y);
 		else
 		{
 			if (g_OutOfRangeColor)
@@ -4510,12 +4588,12 @@ void COrion::DrawLandTexture(CLandObject *land, ushort color, const int &x, cons
 
 			glUniform1iARB(g_ShaderDrawMode, drawMode);
 
-			g_GL_DrawLandTexture(*th, x, y, land);
+			g_GL_DrawLandTexture(*th, x, y + (land->Z * 4), land);
 		}
 	}
 }
 //----------------------------------------------------------------------------------
-void COrion::DrawLandArt(const ushort &id, ushort color, const int &x, const int &y, const int &z)
+void COrion::DrawLandArt(const ushort &id, ushort color, const int &x, const int &y)
 {
 	WISPFUN_DEBUG("c194_f77");
 	CGLTexture *th = ExecuteLandArt(id);
@@ -4532,11 +4610,11 @@ void COrion::DrawLandArt(const ushort &id, ushort color, const int &x, const int
 
 		glUniform1iARB(g_ShaderDrawMode, drawMode);
 
-		th->Draw(x - 22, y - (22 + (z * 4)));
+		th->Draw(x - 22, y - 22);
 	}
 }
 //----------------------------------------------------------------------------------
-void COrion::DrawStaticArt(const ushort &id, ushort color, const int &x, const int &y, const int &z, const bool &selection, const bool &hidden)
+void COrion::DrawStaticArt(const ushort &id, ushort color, const int &x, const int &y, const bool &selection)
 {
 	WISPFUN_DEBUG("c194_f78");
 	CGLTexture *th = ExecuteStaticArt(id);
@@ -4550,7 +4628,7 @@ void COrion::DrawStaticArt(const ushort &id, ushort color, const int &x, const i
 
 		if (drawMode)
 		{
-			bool partialHue = (!selection && IsPartialHue(GetStaticFlags(id)) && !hidden);
+			bool partialHue = (!selection && IsPartialHue(GetStaticFlags(id)));
 
 			if (partialHue)
 				drawMode = 2;
@@ -4560,17 +4638,17 @@ void COrion::DrawStaticArt(const ushort &id, ushort color, const int &x, const i
 
 		glUniform1iARB(g_ShaderDrawMode, drawMode);
 
-		th->Draw(x - m_StaticDataIndex[id].Width, y - (m_StaticDataIndex[id].Height + (z * 4)));
+		th->Draw(x - m_StaticDataIndex[id].Width, y - m_StaticDataIndex[id].Height);
 	}
 }
 //----------------------------------------------------------------------------------
-void COrion::DrawStaticArtAnimated(const ushort &id, const ushort &color, const int &x, const int &y, const int &z, const bool &selection, const bool &hidden)
+void COrion::DrawStaticArtAnimated(const ushort &id, const ushort &color, const int &x, const int &y, const bool &selection)
 {
 	WISPFUN_DEBUG("c194_f79");
-	DrawStaticArt(id + m_StaticDataIndex[id].Offset, color, x, y, z, selection, hidden);
+	DrawStaticArt(id + m_StaticDataIndex[id].Offset, color, x, y, selection);
 }
 //----------------------------------------------------------------------------------
-void COrion::DrawStaticArtRotated(const ushort &id, ushort color, const int &x, const int &y, const int &z, const float &angle)
+void COrion::DrawStaticArtRotated(const ushort &id, ushort color, const int &x, const int &y, const float &angle)
 {
 	WISPFUN_DEBUG("c194_f80");
 	CGLTexture *th = ExecuteStaticArt(id);
@@ -4587,17 +4665,17 @@ void COrion::DrawStaticArtRotated(const ushort &id, ushort color, const int &x, 
 
 		glUniform1iARB(g_ShaderDrawMode, drawMode);
 
-		th->DrawRotated(x, y - (z * 4), angle);
+		th->DrawRotated(x, y, angle);
 	}
 }
 //----------------------------------------------------------------------------------
-void COrion::DrawStaticArtAnimatedRotated(const ushort &id, const ushort &color, const int &x, const int &y, const int &z, const float &angle)
+void COrion::DrawStaticArtAnimatedRotated(const ushort &id, const ushort &color, const int &x, const int &y, const float &angle)
 {
 	WISPFUN_DEBUG("c194_f81");
-	DrawStaticArtRotated(id + m_StaticDataIndex[id].Offset, color, x, y, z, angle);
+	DrawStaticArtRotated(id + m_StaticDataIndex[id].Offset, color, x, y, angle);
 }
 //----------------------------------------------------------------------------------
-void COrion::DrawStaticArtTransparent(const ushort &id, ushort color, int x, int y, const int &z, const bool &selection)
+void COrion::DrawStaticArtTransparent(const ushort &id, ushort color, int x, int y, const bool &selection)
 {
 	WISPFUN_DEBUG("c194_f82");
 	CGLTexture *th = ExecuteStaticArt(id);
@@ -4621,14 +4699,14 @@ void COrion::DrawStaticArtTransparent(const ushort &id, ushort color, int x, int
 
 		glUniform1iARB(g_ShaderDrawMode, drawMode);
 
-		th->DrawTransparent(x - m_StaticDataIndex[id].Width, y - (m_StaticDataIndex[id].Height + (z * 4)));
+		th->DrawTransparent(x - m_StaticDataIndex[id].Width, y - m_StaticDataIndex[id].Height);
 	}
 }
 //----------------------------------------------------------------------------------
-void COrion::DrawStaticArtAnimatedTransparent(const ushort &id, const ushort &color, const int &x, const int &y, const int &z, const bool &selection)
+void COrion::DrawStaticArtAnimatedTransparent(const ushort &id, const ushort &color, const int &x, const int &y, const bool &selection)
 {
 	WISPFUN_DEBUG("c194_f83");
-	DrawStaticArtTransparent(id + m_StaticDataIndex[id].Offset, color, x, y, z, selection);
+	DrawStaticArtTransparent(id + m_StaticDataIndex[id].Offset, color, x, y, selection);
 }
 //----------------------------------------------------------------------------------
 void COrion::DrawStaticArtInContainer(const ushort &id, ushort color, int x, int y, const bool &selection, const bool &onMouse)
@@ -4901,7 +4979,7 @@ bool COrion::ResizepicPixelsInXY(const ushort &id, int x, int y, const int &widt
 	return false;
 }
 //----------------------------------------------------------------------------------
-bool COrion::StaticPixelsInXY(const ushort &id, int x, int y, const int &z)
+bool COrion::StaticPixelsInXY(const ushort &id, int x, int y)
 {
 	WISPFUN_DEBUG("c194_f90");
 	CIndexObject &io = m_StaticDataIndex[id];
@@ -4913,7 +4991,7 @@ bool COrion::StaticPixelsInXY(const ushort &id, int x, int y, const int &z)
 	if (th != NULL)
 	{
 		x = (g_MouseManager.Position.X - x) + io.Width;
-		y = (g_MouseManager.Position.Y - y) + io.Height + (z * 4);
+		y = (g_MouseManager.Position.Y - y) + io.Height;
 
 #if UO_ENABLE_TEXTURE_DATA_SAVING == 1
 		if (x >= 0 && y >= 0 && x < th->Width && y < th->Height)
@@ -4926,10 +5004,10 @@ bool COrion::StaticPixelsInXY(const ushort &id, int x, int y, const int &z)
 	return result;
 }
 //----------------------------------------------------------------------------------
-bool COrion::StaticPixelsInXYAnimated(const ushort &id, const int &x, const int &y, const int &z)
+bool COrion::StaticPixelsInXYAnimated(const ushort &id, const int &x, const int &y)
 {
 	WISPFUN_DEBUG("c194_f91");
-	return StaticPixelsInXY(id + m_StaticDataIndex[id].Offset, x, y, z);
+	return StaticPixelsInXY(id + m_StaticDataIndex[id].Offset, x, y);
 }
 //----------------------------------------------------------------------------------
 bool COrion::CircleTransPixelsInXY()
@@ -4974,7 +5052,7 @@ bool COrion::StaticPixelsInXYInContainer(const ushort &id, int x, int y)
 	return result;
 }
 //----------------------------------------------------------------------------------
-bool COrion::LandPixelsInXY(const ushort &id, int x, int  y, const int &z)
+bool COrion::LandPixelsInXY(const ushort &id, int x, int  y)
 {
 	WISPFUN_DEBUG("c194_f94");
 	CIndexObject &io = m_LandDataIndex[id];
@@ -4986,7 +5064,7 @@ bool COrion::LandPixelsInXY(const ushort &id, int x, int  y, const int &z)
 	if (th != NULL)
 	{
 		x = (g_MouseManager.Position.X - x) + 22;
-		y = (g_MouseManager.Position.Y - y) + 22 + (z * 4);
+		y = (g_MouseManager.Position.Y - y) + 22;
 
 #if UO_ENABLE_TEXTURE_DATA_SAVING == 1
 		if (x >= 0 && y >= 0 && x < th->Width && y < th->Height)
@@ -5433,7 +5511,7 @@ void COrion::EquipItem(uint container)
 			if (!container)
 				container = g_PlayerSerial;
 
-			CPacketEquipRequest(g_ObjectInHand.Serial, m_StaticData[graphic].Quality, container).Send();
+			CPacketEquipRequest(g_ObjectInHand.Serial, m_StaticData[graphic].Layer, container).Send();
 
 			g_ObjectInHand.Enabled = false;
 		}
@@ -5881,10 +5959,9 @@ void COrion::OpenJournal()
 void COrion::OpenSkills()
 {
 	WISPFUN_DEBUG("c194_f139");
-	if (g_Player->SkillsReceived)
-		g_GumpManager.AddGump(new CGumpSkills(g_PlayerSerial, 0, 0, false));
-	else
-		CPacketSkillsRequest(g_PlayerSerial).Send();
+
+	g_SkillsRequested = true;
+	CPacketSkillsRequest(g_PlayerSerial).Send();
 }
 //----------------------------------------------------------------------------------
 void COrion::OpenBackpack()

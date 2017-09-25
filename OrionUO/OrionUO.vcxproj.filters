@@ -798,6 +798,21 @@
     <ClInclude Include="Managers\CorpseManager.h">
       <Filter>Header Files\Managers</Filter>
     </ClInclude>
+    <ClInclude Include="DateTimeStamp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UseItemsList.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ContainerStack.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Gumps\GumpCustomHouse.h">
+      <Filter>Header Files\Gumps</Filter>
+    </ClInclude>
+    <ClInclude Include="Game objects\CustomHouseObjects.h">
+      <Filter>Header Files\Game objects</Filter>
+    </ClInclude>
     <ClInclude Include="CrashRpt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1480,6 +1495,21 @@
     </ClCompile>
     <ClCompile Include="Managers\CorpseManager.cpp">
       <Filter>Source Files\Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="DateTimeStamp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UseItemsList.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ContainerStack.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Gumps\GumpCustomHouse.cpp">
+      <Filter>Source Files\Gumps</Filter>
+    </ClCompile>
+    <ClCompile Include="Game objects\CustomHouseObjects.cpp">
+      <Filter>Source Files\Game objects</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

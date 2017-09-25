@@ -67,8 +67,8 @@ CPacketInfo CPacketManager::m_Packets[0x100] =
 	/*0x25*/ RMSGH(ORION_SAVE_PACKET, "Update Contained Item", 0x14, UpdateContainedItem),
 	/*0x26*/ BMSG(ORION_SAVE_PACKET, "Kick client (God client)", 0x05),
 	/*0x27*/ RMSGH(ORION_SAVE_PACKET, "Deny Move Item", 0x02, DenyMoveItem),
-	/*0x28*/ RMSG(ORION_SAVE_PACKET, "Deny move item?", 0x05),
-	/*0x29*/ RMSG(ORION_SAVE_PACKET, "Drop Item Acceptem", 0x01),
+	/*0x28*/ RMSGH(ORION_SAVE_PACKET, "End dragging item", 0x05, EndDraggingItem),
+	/*0x29*/ RMSGH(ORION_SAVE_PACKET, "Drop Item Accepted", 0x01, DropItemAccepted),
 	/*0x2A*/ RMSG(ORION_SAVE_PACKET, "Blood mode", 0x05),
 	/*0x2B*/ BMSG(ORION_SAVE_PACKET, "Toggle God mode (God client)", 0x02),
 	/*0x2C*/ BMSGH(ORION_IGNORE_PACKET, "Death Screen", 0x02, DeathScreen),
@@ -540,6 +540,7 @@ void CPacketManager::AddMegaClilocRequest(const uint &serial)
 void CPacketManager::OnReadFailed()
 {
 	WISPFUN_DEBUG("c150_f7");
+	LOG("OnReadFailed...Disconnecting...\n");
 	g_Orion.DisconnectGump();
 	g_Orion.Disconnect();
 }
@@ -617,7 +618,7 @@ void CPacketManager::PluginReceiveHandler(puchar buf, const int &size)
 
 	CPacketInfo &info = m_Packets[*m_Start];
 
-	LOG("--- ^(%d) r(+%d => %d) Plugin:: %s\n", ticks - g_LastPacketTime, m_Size, g_TotalRecvSize, info.Name);
+	LOG("--- ^(%d) r(+%d => %d) Plugin->Client:: %s\n", ticks - g_LastPacketTime, m_Size, g_TotalRecvSize, info.Name);
 	LOG_DUMP(m_Start, m_Size);
 
 	g_LastPacketTime = ticks;
@@ -751,7 +752,7 @@ PACKET_HANDLER(CharacterList)
 
 	g_CharacterList.OnePerson = (bool)(g_ClientFlag & CLF_ONE_CHARACTER_SLOT);
 	//g_SendLogoutNotification = (bool)(g_ClientFlag & LFF_RE);
-	g_NPCPopupEnabled = (bool)(g_ClientFlag & CLF_CONTEXT_MENU);
+	g_PopupEnabled = (bool)(g_ClientFlag & CLF_CONTEXT_MENU);
 	g_TooltipsEnabled = (bool)((g_ClientFlag & CLF_PALADIN_NECROMANCER_TOOLTIPS) && (g_PacketManager.ClientVersion >= CV_308Z));
 	g_PaperdollBooks = (bool)(g_ClientFlag & CLF_PALADIN_NECROMANCER_TOOLTIPS);
 
@@ -855,6 +856,7 @@ PACKET_HANDLER(EnterWorld)
 	g_OldSeason = ST_SUMMER;
 	g_GlobalScale = 1.0;
 	g_PathFinder.BlockMoving = false;
+	g_SkillsRequested = false;
 
 	Move(4);
 
@@ -1549,50 +1551,54 @@ PACKET_HANDLER(DenyMoveItem)
 		if (g_World->ObjectToRemove == g_ObjectInHand.Serial)
 			g_World->ObjectToRemove = 0;
 
-		if (!g_ObjectInHand.Layer && g_ObjectInHand.Container && g_ObjectInHand.Container != 0xFFFFFFFF)
+		if (!g_ObjectInHand.UpdatedInWorld)
 		{
-			g_World->UpdateContainedItem(g_ObjectInHand.Serial, g_ObjectInHand.Graphic, 0, g_ObjectInHand.TotalCount, g_ObjectInHand.X, g_ObjectInHand.Y, g_ObjectInHand.Container, g_ObjectInHand.Color);
-
-			g_GumpManager.UpdateContent(g_ObjectInHand.Container, 0, GT_CONTAINER);
-		}
-		else
-		{
-			CGameItem *obj = g_World->GetWorldItem(g_ObjectInHand.Serial);
-
-			if (obj != NULL)
+			if (!g_ObjectInHand.Layer && g_ObjectInHand.Container && g_ObjectInHand.Container != 0xFFFFFFFF)
 			{
-				obj->Graphic = g_ObjectInHand.Graphic;
-				obj->Color = g_ObjectInHand.Color;
-				obj->Count = g_ObjectInHand.TotalCount;
-				obj->Flags = g_ObjectInHand.Flags;
-				obj->X = g_ObjectInHand.X;
-				obj->Y = g_ObjectInHand.Y;
-				obj->Z = g_ObjectInHand.Z;
+				g_World->UpdateContainedItem(g_ObjectInHand.Serial, g_ObjectInHand.Graphic, 0, g_ObjectInHand.TotalCount, g_ObjectInHand.X, g_ObjectInHand.Y, g_ObjectInHand.Container, g_ObjectInHand.Color);
 
-				CGameObject *container = g_World->FindWorldObject(g_ObjectInHand.Container);
-
-				if (container != NULL)
-				{
-					if (container->NPC)
-					{
-						g_World->PutEquipment(obj, container, g_ObjectInHand.Layer);
-
-						g_GumpManager.UpdateContent(obj->Container, 0, GT_PAPERDOLL);
-					}
-					else
-					{
-						g_World->RemoveObject(obj);
-						obj = NULL;
-					}
-				}
-				else
-					g_World->RemoveFromContainer(obj);
-
-				if (g_TooltipsEnabled)
-					AddMegaClilocRequest(g_ObjectInHand.Serial);
+				g_GumpManager.UpdateContent(g_ObjectInHand.Container, 0, GT_CONTAINER);
+			}
+			else
+			{
+				CGameItem *obj = g_World->GetWorldItem(g_ObjectInHand.Serial);
 
 				if (obj != NULL)
-					g_World->MoveToTop(obj);
+				{
+					obj->Graphic = g_ObjectInHand.Graphic;
+					obj->Color = g_ObjectInHand.Color;
+					obj->Count = g_ObjectInHand.TotalCount;
+					obj->Flags = g_ObjectInHand.Flags;
+					obj->X = g_ObjectInHand.X;
+					obj->Y = g_ObjectInHand.Y;
+					obj->Z = g_ObjectInHand.Z;
+					obj->OnGraphicChange();
+
+					CGameObject *container = g_World->FindWorldObject(g_ObjectInHand.Container);
+
+					if (container != NULL)
+					{
+						if (container->NPC)
+						{
+							g_World->PutEquipment(obj, container, g_ObjectInHand.Layer);
+
+							g_GumpManager.UpdateContent(obj->Container, 0, GT_PAPERDOLL);
+						}
+						else
+						{
+							g_World->RemoveObject(obj);
+							obj = NULL;
+						}
+					}
+					else
+						g_World->RemoveFromContainer(obj);
+
+					if (g_TooltipsEnabled)
+						AddMegaClilocRequest(g_ObjectInHand.Serial);
+
+					if (obj != NULL)
+						g_World->MoveToTop(obj);
+				}
 			}
 		}
 
@@ -1616,6 +1622,28 @@ PACKET_HANDLER(DenyMoveItem)
 
 		g_Orion.CreateTextMessage(TT_SYSTEM, 0xFFFFFFFF, 3, 0, errorMessages[code]);
 	}
+}
+//----------------------------------------------------------------------------------
+PACKET_HANDLER(EndDraggingItem)
+{
+	WISPFUN_DEBUG("c150_f33_1");
+	if (g_World == NULL)
+		return;
+
+	//Unused
+	//Move(2);
+	//Move(2);
+
+	g_ObjectInHand.Enabled = false;
+}
+//----------------------------------------------------------------------------------
+PACKET_HANDLER(DropItemAccepted)
+{
+	WISPFUN_DEBUG("c150_f33_1");
+	if (g_World == NULL)
+		return;
+
+	g_ObjectInHand.Enabled = false;
 }
 //----------------------------------------------------------------------------------
 PACKET_HANDLER(DeleteObject)
@@ -1977,28 +2005,83 @@ PACKET_HANDLER(OpenContainer)
 	}
 	else if (gumpid == 0x0030) //Buylist
 	{
-		CGumpShop *buyGump = (CGumpShop*)g_GumpManager.GetGump(serial, 0, GT_SHOP);
+		g_GumpManager.CloseGump(serial, 0, GT_SHOP);
 
-		if (buyGump != NULL && (buyGump->Serial != serial || !buyGump->IsBuyGump))
+		CGameCharacter *vendor = g_World->FindWorldCharacter(serial);
+
+		if (vendor != NULL)
 		{
-			g_GumpManager.RemoveGump(buyGump);
-			buyGump = NULL;
+			CGumpShop *buyGump = new CGumpShop(serial, true, 150, 5);
+			gump = buyGump;
+			buyGump->Visible = true;
+
+			IFOR(layer, OL_BUY_RESTOCK, OL_BUY + 1)
+			{
+				CGameItem *item = vendor->FindLayer(layer);
+
+				if (item == NULL)
+				{
+					LOG("Buy layer %i not found!\n", layer);
+					continue;
+				}
+
+				item = (CGameItem*)item->m_Items;
+
+				if (item == NULL)
+				{
+					LOG("Buy items not found!\n");
+					continue;
+				}
+
+				bool reverse = (item->X > 1);
+
+				if (reverse)
+				{
+					while (item != NULL && item->m_Next != NULL)
+						item = (CGameItem*)item->m_Next;
+				}
+
+				CGUIHTMLGump *htmlGump = buyGump->m_ItemList[0];
+
+				int currentY = 0;
+
+				QFOR(shopItem, htmlGump->m_Items, CBaseGUI*)
+				{
+					if (shopItem->Type == GOT_SHOPITEM)
+						currentY += shopItem->GetSize().Height;
+				}
+
+				while (item != NULL)
+				{
+					CGUIShopItem *shopItem = (CGUIShopItem*)htmlGump->Add(new CGUIShopItem(item->Serial, item->Graphic, item->Color, item->Count, item->Price, item->Name, 0, currentY));
+					shopItem->NameFromCliloc = item->NameFromCliloc;
+
+					if (!currentY)
+					{
+						shopItem->Selected = true;
+						shopItem->CreateNameText();
+						shopItem->UpdateOffsets();
+					}
+
+					currentY += shopItem->GetSize().Height;
+
+					if (reverse)
+						item = (CGameItem*)item->m_Prev;
+					else
+						item = (CGameItem*)item->m_Next;
+				}
+
+				htmlGump->CalculateDataSize();
+			}
 		}
-
-		if (buyGump == NULL)
-			buyGump = new CGumpShop(serial, true, 150, 5);
 		else
-			addGump = false;
-
-		gump = buyGump;
-
-		buyGump->Visible = true;
+			LOG("Buy vendor not found!\n");
 	}
 	else //Container
 	{
 		ushort graphic = 0xFFFF;
 
-		IFOR(i, 0, CONTAINERS_COUNT)
+		IFOR(i, 0, (int)g_ContainerOffset.size())
 		{
 			if (gumpid == g_ContainerOffset[i].Gump)
 			{
@@ -2085,6 +2168,19 @@ PACKET_HANDLER(UpdateSkills)
 
 	CGumpSkills *gump = (CGumpSkills*)g_GumpManager.UpdateGump(g_PlayerSerial, 0, GT_SKILLS);
 
+	if (type == 0 && g_SkillsRequested)
+	{
+		g_SkillsRequested = false;
+
+		if (gump == NULL)
+		{
+			gump = new CGumpSkills(g_PlayerSerial, 0, 0, false);
+			g_GumpManager.AddGump(gump);
+		}
+
+		gump->Visible = true;
+	}
+
 	while (m_Ptr < m_End)
 	{
 		ushort id = ReadUInt16BE();
@@ -2139,12 +2235,8 @@ PACKET_HANDLER(UpdateSkills)
 	IFOR(i, 0, g_SkillsCount)
 		g_SkillsTotal += g_Player->GetSkillValue(i);
 
-	g_Player->SkillsReceived = true;
 	if (gump != NULL)
-	{
 		gump->UpdateSkillsSum();
-		g_Orion.OpenSkills();
-	}
 }
 //----------------------------------------------------------------------------------
 PACKET_HANDLER(ExtendedCommand)
@@ -2221,7 +2313,7 @@ PACKET_HANDLER(ExtendedCommand)
 			{
 				str = g_ClilocManager.Cliloc(g_Language)->GetW(clilocNum, true);
 				g_Orion.CreateUnicodeTextMessage(TT_OBJECT, serial, 0x03, 0x3B2, str);
-				if (item != NULL)
+				if (item != NULL && !item->NPC)
 					item->Name = ToString(str);
 
 			}
@@ -2232,11 +2324,7 @@ PACKET_HANDLER(ExtendedCommand)
 			{
 				crafterNameLen = ReadUInt16BE();
 				if (crafterNameLen)
-				{
-					wstring crafterName = ReadWString(crafterNameLen);
-					str = L"Crafted by ";
-					str += crafterName;
-				}
+					str = L"Crafted by " + DecodeUTF8(ReadString(crafterNameLen));
 			}
 			
 			if (crafterNameLen != 0)
@@ -2512,6 +2600,47 @@ PACKET_HANDLER(ExtendedCommand)
 		}
 		case 0x20:
 		{
+			uint houseSerial = ReadUInt32BE();
+			uchar type = ReadUInt8();
+			ushort graphic = ReadUInt16BE();
+			ushort x = ReadUInt16BE();
+			ushort y = ReadUInt16BE();
+			uchar z = ReadUInt8();
+
+			switch (type)
+			{
+				case CHUT_UPDATE:
+				{
+					break;
+				}
+				case CHUT_REMOVE:
+				{
+					break;
+				}
+				case CHUT_UPDATE_MULTI_POS:
+				{
+					break;
+				}
+				case CHUT_CONSTRUCT_BEGIN:
+				{
+					if (g_GumpManager.GetGump(0, 0, GT_CUSTOM_HOUSE))
+						break;
+
+					CGumpCustomHouse *gump = new CGumpCustomHouse(houseSerial, 50, 50);
+
+					g_GumpManager.AddGump(gump);
+
+					break;
+				}
+				case CHUT_CONSTRUCT_END:
+				{
+					g_GumpManager.CloseGump(houseSerial, 0, GT_CUSTOM_HOUSE);
+					break;
+				}
+				default:
+					break;
+			}
+
 			break;
 		}
 		case 0x21:
@@ -2541,7 +2670,7 @@ PACKET_HANDLER(ExtendedCommand)
 				text->Unicode = false;
 				text->Font = 3;
 				text->Serial = serial;
-				text->Color = 0x0035;
+				text->Color = (serial == g_PlayerSerial ? 0x0034 : 0x0021);
 				text->Type = TT_OBJECT;
 				text->SetText(std::to_string(damage));
 				text->GenerateTexture(0);
@@ -3640,7 +3769,7 @@ PACKET_HANDLER(Damage)
 		text->Unicode = false;
 		text->Font = 3;
 		text->Serial = serial;
-		text->Color = 0x0035;
+		text->Color = (serial == g_PlayerSerial ? 0x0034 : 0x0021);
 		text->Type = TT_OBJECT;
 		text->SetText(std::to_string(damage));
 		text->GenerateTexture(0);
@@ -4469,7 +4598,12 @@ PACKET_HANDLER(OpenGump)
 				htmlInfo.Color = 0;
 
 				if (cmd == "xmfhtmlgumpcolor" && listSize >= 9)
+				{
 					htmlInfo.Color = ToInt(list[8]);
+
+					if (htmlInfo.Color == 0x7FFF)
+						htmlInfo.Color = 0x00FFFFFF;
+				}
 
 				htmlGumlList.push_back(htmlInfo);
 			}
@@ -5088,32 +5222,25 @@ PACKET_HANDLER(BuyList)
 				break;
 			}
 
-			uint price = ReadUInt32BE();
+			item->Price = ReadUInt32BE();
 
 			uchar nameLen = ReadUInt8();
 			string name = ReadString(nameLen);
 
 			//try int.parse and read cliloc.
 			int clilocNum = 0;
-			bool nameFromCliloc = false;
 
 			if (Int32TryParse(name, clilocNum))
 			{
-				name = g_ClilocManager.Cliloc(g_Language)->GetA(clilocNum, true);
-				nameFromCliloc = true;
+				item->Name = g_ClilocManager.Cliloc(g_Language)->GetA(clilocNum, true);
+				item->NameFromCliloc = true;
 			}
-
-			CGUIShopItem *shopItem = (CGUIShopItem*)htmlGump->Add(new CGUIShopItem(item->Serial, item->Graphic, item->Color, item->Count, price, name, 0, currentY));
-			shopItem->NameFromCliloc = nameFromCliloc;
-
-			if (!currentY)
+			else
 			{
-				shopItem->Selected = true;
-				shopItem->CreateNameText();
-				shopItem->UpdateOffsets();
+				item->Name = name;
+				item->NameFromCliloc = false;
 			}
 
-			currentY += shopItem->GetSize().Height;
 			if (reverse)
 				item = (CGameItem*)item->m_Prev;
 			else
@@ -5232,31 +5359,32 @@ PACKET_HANDLER(CustomHouse)
 	uint revision = ReadUInt32BE();
 	CGameItem *foundationItem = g_World->GetWorldItem(houseSerial);
 
+	if (foundationItem == NULL)
+		return;
+
+	foundationItem->ClearCustomHouseMultis();
 
 	ReadUInt16BE();
 	ReadUInt16BE();
 
-	uchar planes = ReadUInt8();
-
-
-	uint header;
-
-	int cLen, planeZ, planeMode;
-	uLongf dLen;
 	CMulti* multi = foundationItem->GetMulti();
-	if (multi == NULL) return;
+
+	if (multi == NULL)
+		return;
+
 	short minX = multi->MinX;
 	short minY = multi->MinY;
 	short maxY = multi->MaxY;
 
+	uchar planes = ReadUInt8();
+
 	IFOR(plane, 0, planes)
 	{
-
-		header = ReadUInt32BE();
-		dLen = ((header & 0xFF0000) >> 16) | ((header & 0xF0) << 4);
-		cLen = ((header & 0xFF00) >> 8) | ((header & 0x0F) << 8);
-		planeZ = (header & 0x0F000000) >> 24;
-		planeMode = (header & 0xF0000000) >> 28;
+		uint header = ReadUInt32BE();
+		uLongf dLen = ((header & 0xFF0000) >> 16) | ((header & 0xF0) << 4);
+		int cLen = ((header & 0xFF00) >> 8) | ((header & 0x0F) << 8);
+		int planeZ = (header & 0x0F000000) >> 24;
+		int planeMode = (header & 0xF0000000) >> 28;
 
 		if (cLen <= 0) continue;
 		UCHAR_LIST decompressedBytes(dLen);
@@ -5284,11 +5412,14 @@ PACKET_HANDLER(CustomHouse)
 					id = tempReader.ReadUInt16BE();
 					x = tempReader.ReadUInt8();
 					y = tempReader.ReadUInt8();
-					z = tempReader.ReadUInt8();
-					z += foundationItem->Z;
-					if (id == 0) continue;
-					foundationItem->AddMulti(id, x, y, z);
+					z = tempReader.ReadUInt8() + foundationItem->Z;
+
+					if (id == 0)
+						continue;
+
+					foundationItem->AddMulti(id, x, y, z, true);
 				}
+
 				break;
 			}
 			case 1:
@@ -5303,9 +5434,13 @@ PACKET_HANDLER(CustomHouse)
 					id = tempReader.ReadUInt16BE();
 					x = tempReader.ReadUInt8();
 					y = tempReader.ReadUInt8();
-					if (id == 0) continue;
-					foundationItem->AddMulti(id, x, y, z);
+
+					if (id == 0)
+						continue;
+
+					foundationItem->AddMulti(id, x, y, z, true);
 				}
+
 				break;
 			}
 			case 2:
@@ -5338,14 +5473,18 @@ PACKET_HANDLER(CustomHouse)
 					multiHeight = (maxY - minY) + 1;
 				}
 
-				for (uint i = 0; i < decompressedBytes.size()/2; i++)
+				for (uint i = 0; i < decompressedBytes.size() / 2; i++)
 				{
 					id = tempReader.ReadUInt16BE();
 					x = i / multiHeight + xOffs;
 					y = i % multiHeight + yOffs;
-					if (id == 0) continue;
-					foundationItem->AddMulti(id, x, y, z);
+
+					if (id == 0)
+						continue;
+
+					foundationItem->AddMulti(id, x, y, z, true);
 				}
+
 				break;
 			}
 		}

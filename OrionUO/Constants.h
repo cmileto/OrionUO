@@ -10,7 +10,18 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 //----------------------------------------------------------------------------------
+//!Стартовая позиция открытия контейнеров
+const int CONTAINERS_RECT_DEFAULT_POS = 40;
+
+//!Смещение при заполнении линии
+const int CONTAINERS_RECT_LINESTEP = 800;
+
+//!Шаг смещения
+const int CONTAINERS_RECT_STEP = 20;
+
 const int MAX_CONSOLE_STACK_SIZE = 100;
+
+const int DRAG_ITEMS_DISTANCE = 3;
 
 const int MAX_ANIMATIONS_OBJECT_REMOVED_BY_GARBAGE_COLLECTOR = 5;
 
@@ -112,7 +123,7 @@ const int MAX_ANIMATIONS_DATA_INDEX_COUNT = 2048;
 const int MAX_LIGHTS_DATA_INDEX_COUNT = 100;
 
 //!Спектральные цвета
-const WORD SPECTRAL_COLOR = 0x4000;
+const WORD SPECTRAL_COLOR_FLAG = 0x4000;
 
 //!Специальный цвет спектральной группы (более мягкий переход по краям, нет сильно выраженных границ)
 const WORD SPECTRAL_COLOR_SPECIAL = 0x4666;

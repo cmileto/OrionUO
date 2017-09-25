@@ -31,6 +31,10 @@ class CGameItem : public CGameObject
 	SETGET(ushort, FieldColor, 0);
 	//!Бонус дистанции для мульти-объекта
 	SETGET(short, MultiDistanceBonus, 0);
+	//!Цена для магазина
+	SETGET(uint, Price, 0);
+	//!Имя из клилока (для гампа магазина)
+	SETGET(bool, NameFromCliloc, false);
 
 protected:
 	/*!
@@ -56,7 +60,9 @@ public:
 
 	virtual void Select(const int &x, const int &y);
 
-	void AddMulti(ushort &graphic, char &x, char &y, char &z);
+	void ClearCustomHouseMultis();
+
+	void AddMulti(const ushort &graphic, const char &x, const char &y, const char &z, const bool &isCustomHouseMulti);
 
 	/*!
 	Событие изменения картинки объекта

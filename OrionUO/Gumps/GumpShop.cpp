@@ -10,9 +10,11 @@
 #include "stdafx.h"
 //----------------------------------------------------------------------------------
 CGumpShop::CGumpShop(uint serial, bool isBuyGump, short x, short y)
-: CGump(GT_SHOP, serial, x, y), m_IsBuyGump(isBuyGump), m_Visible(!isBuyGump)
+: CGump(GT_SHOP, serial, x, y), m_IsBuyGump(isBuyGump)
 {
 	WISPFUN_DEBUG("c123_f1");
+	m_Visible = !isBuyGump;
+
 	if (isBuyGump)
 		Add(new CGUIGumppic(0x0870, 0, 0));
 	else
@@ -244,9 +246,21 @@ void CGumpShop::GUMP_SCROLL_BUTTON_EVENT_C
 	UpdateTotalPrice();
 }
 //----------------------------------------------------------------------------------
-bool CGumpShop::OnLeftMouseButtonDoubleClick()
+void CGumpShop::OnLeftMouseButtonUp()
 {
 	WISPFUN_DEBUG("c123_f7");
+	CGump::OnLeftMouseButtonUp();
+
+	if (g_Target.IsTargeting() && !g_ObjectInHand.Enabled && g_World->FindWorldObject(g_SelectedObject.Serial) != NULL)
+	{
+		g_Target.SendTargetObject(g_SelectedObject.Serial);
+		g_MouseManager.CancelDoubleClick = true;
+	}
+}
+//----------------------------------------------------------------------------------
+bool CGumpShop::OnLeftMouseButtonDoubleClick()
+{
+	WISPFUN_DEBUG("c123_f8");
 	bool result = false;
 
 	if (g_PressedObject.LeftObject != NULL && g_PressedObject.LeftObject->IsGUI())

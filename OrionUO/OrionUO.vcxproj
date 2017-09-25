@@ -111,6 +111,9 @@ xcopy /y /d  "$(SolutionDir)debug_bin\Orion.dll" "$(ProjectDir)"
       <AdditionalManifestFiles>$(SolutionDir)OrionUO.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
+    <PreBuildEvent>
+      <Command>if exist "$(ProjectDir)Debug\DateTimeStamp.obj" (del "$(ProjectDir)Debug\DateTimeStamp.obj")</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -182,6 +185,9 @@ xcopy /y /d  "$(SolutionDir)bin\Orion.dll" "$(ProjectDir)"
     <Manifest>
       <AdditionalManifestFiles>$(SolutionDir)OrionUO.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
     </Manifest>
+    <PreBuildEvent>
+      <Command>if exist "$(ProjectDir)Release\DateTimeStamp.obj" (del "$(ProjectDir)Release\DateTimeStamp.obj")</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -232,10 +238,13 @@ xcopy /y /d  "$(SolutionDir)bin\Orion.dll" "$(ProjectDir)"
     <ClInclude Include="CommonInterfaces.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="Container.h" />
+    <ClInclude Include="ContainerStack.h" />
+    <ClInclude Include="DateTimeStamp.h" />
     <ClInclude Include="CrashRpt.h" />
     <ClInclude Include="DefinitionMacro.h" />
     <ClInclude Include="EnumList.h" />
     <ClInclude Include="ExceptionFilter.h" />
+    <ClInclude Include="Game objects\CustomHouseObjects.h" />
     <ClInclude Include="Game objects\GameCharacter.h" />
     <ClInclude Include="Game objects\GameEffect.h" />
     <ClInclude Include="Game objects\GameEffectDrag.h" />
@@ -319,6 +328,7 @@ xcopy /y /d  "$(SolutionDir)bin\Orion.dll" "$(ProjectDir)"
     <ClInclude Include="Gumps\GumpBulletinBoard.h" />
     <ClInclude Include="Gumps\GumpBulletinBoardItem.h" />
     <ClInclude Include="Gumps\GumpCombatBook.h" />
+    <ClInclude Include="Gumps\GumpCustomHouse.h" />
     <ClInclude Include="Gumps\GumpRacialAbilitiesBook.h" />
     <ClInclude Include="Gumps\GumpRacialAbility.h" />
     <ClInclude Include="Gumps\GumpShop.h" />
@@ -438,6 +448,7 @@ xcopy /y /d  "$(SolutionDir)bin\Orion.dll" "$(ProjectDir)"
     <ClInclude Include="TextEngine\TextRenderer.h" />
     <ClInclude Include="TextureObject.h" />
     <ClInclude Include="ToolTip.h" />
+    <ClInclude Include="UseItemsList.h" />
     <ClInclude Include="Utility\AutoResetEvent.h" />
     <ClInclude Include="VMQuery.h" />
     <ClInclude Include="Walker\FastWalk.h" />
@@ -471,7 +482,10 @@ xcopy /y /d  "$(SolutionDir)bin\Orion.dll" "$(ProjectDir)"
     <ClCompile Include="ClickObject.cpp" />
     <ClCompile Include="CommonInterfaces.cpp" />
     <ClCompile Include="Container.cpp" />
+    <ClCompile Include="ContainerStack.cpp" />
+    <ClCompile Include="DateTimeStamp.cpp" />
     <ClCompile Include="ExceptionFilter.cpp" />
+    <ClCompile Include="Game objects\CustomHouseObjects.cpp" />
     <ClCompile Include="Game objects\GameCharacter.cpp" />
     <ClCompile Include="Game objects\GameEffect.cpp" />
     <ClCompile Include="Game objects\GameEffectDrag.cpp" />
@@ -555,6 +569,7 @@ xcopy /y /d  "$(SolutionDir)bin\Orion.dll" "$(ProjectDir)"
     <ClCompile Include="Gumps\GumpBulletinBoard.cpp" />
     <ClCompile Include="Gumps\GumpBulletinBoardItem.cpp" />
     <ClCompile Include="Gumps\GumpCombatBook.cpp" />
+    <ClCompile Include="Gumps\GumpCustomHouse.cpp" />
     <ClCompile Include="Gumps\GumpRacialAbilitiesBook.cpp" />
     <ClCompile Include="Gumps\GumpRacialAbility.cpp" />
     <ClCompile Include="Gumps\GumpShop.cpp" />
@@ -672,6 +687,7 @@ xcopy /y /d  "$(SolutionDir)bin\Orion.dll" "$(ProjectDir)"
     <ClCompile Include="TextEngine\TextRenderer.cpp" />
     <ClCompile Include="TextureObject.cpp" />
     <ClCompile Include="ToolTip.cpp" />
+    <ClCompile Include="UseItemsList.cpp" />
     <ClCompile Include="Utility\AutoResetEvent.cpp" />
     <ClCompile Include="VMQuery.cpp" />
     <ClCompile Include="Walker\FastWalk.cpp" />

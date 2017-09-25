@@ -54,9 +54,9 @@ CGumpContainer::~CGumpContainer()
 void CGumpContainer::UpdateItemCoordinates(CGameObject *item)
 {
 	WISPFUN_DEBUG("c93_f3");
-	if (m_Graphic < CONTAINERS_COUNT)
+	if (m_Graphic < g_ContainerOffset.size())
 	{
-		CONTAINER_OFFSET_RECT &rect = g_ContainerOffset[m_Graphic].rect;
+		const CContainerOffsetRect &rect = g_ContainerOffset[m_Graphic].Rect;
 
 		if (item->X < rect.MinX)
 			item->X = rect.MinX;
@@ -127,7 +127,7 @@ void CGumpContainer::InitToolTip()
 void CGumpContainer::PrepareContent()
 {
 	WISPFUN_DEBUG("c93_f7");
-	if (!g_Player->Dead() && GetTopObjDistance(g_Player, g_World->FindWorldObject(Serial)) <= 3 && g_PressedObject.LeftGump == this && !g_ObjectInHand.Enabled && g_PressedObject.LeftSerial != ID_GC_MINIMIZE)
+	if (!g_Player->Dead() && GetTopObjDistance(g_Player, g_World->FindWorldObject(Serial)) <= DRAG_ITEMS_DISTANCE && g_PressedObject.LeftGump == this && !g_ObjectInHand.Enabled && g_PressedObject.LeftSerial != ID_GC_MINIMIZE)
 	{
 		WISP_GEOMETRY::CPoint2Di offset = g_MouseManager.LeftDroppedOffset();
 
@@ -214,12 +214,12 @@ void CGumpContainer::UpdateContent()
 
 			if (m_IsGameBoard)
 			{
-				item = (CGUIGumppicHightlighted*)m_DataBox->Add(new CGUIGumppicHightlighted(obj->Serial, graphic - GAME_FIGURE_GUMP_OFFSET, obj->Color, 0x0035, obj->X, obj->Y - 20));
+				item = (CGUIGumppicHightlighted*)m_DataBox->Add(new CGUIGumppicHightlighted(obj->Serial, graphic - GAME_FIGURE_GUMP_OFFSET, obj->Color & 0x3FFF, 0x0035, obj->X, obj->Y - 20));
 				item->PartialHue = false;
 			}
 			else
 			{
-				item = (CGUIGumppicHightlighted*)m_DataBox->Add(new CGUITilepicHightlighted(obj->Serial, graphic, obj->Color, 0x0035, obj->X, obj->Y, doubleDraw));
+				item = (CGUIGumppicHightlighted*)m_DataBox->Add(new CGUITilepicHightlighted(obj->Serial, graphic, obj->Color & 0x3FFF, 0x0035, obj->X, obj->Y, doubleDraw));
 				item->PartialHue = IsPartialHue(g_Orion.GetStaticFlags(graphic));
 			}
 		}
@@ -283,20 +283,21 @@ void CGumpContainer::OnLeftMouseButtonUp()
 	uint dropContainer = m_Serial;
 	uint selectedSerial = g_SelectedObject.Serial;
 
-	bool canDrop = (GetTopObjDistance(g_Player, g_World->FindWorldObject(dropContainer)) < 3);
+	if (g_Target.IsTargeting() && !g_ObjectInHand.Enabled)
+	{
+		g_Target.SendTargetObject(selectedSerial);
+		g_MouseManager.CancelDoubleClick = true;
+
+		return;
+	}
+
+	bool canDrop = (GetTopObjDistance(g_Player, g_World->FindWorldObject(dropContainer)) <= DRAG_ITEMS_DISTANCE);
 
 	if (canDrop && selectedSerial && selectedSerial != ID_GC_MINIMIZE && selectedSerial != ID_GC_LOCK_MOVING)
 	{
 		canDrop = false;
 
-		if (g_Target.IsTargeting() && !g_ObjectInHand.Enabled)
-		{
-			g_Target.SendTargetObject(selectedSerial);
-			g_MouseManager.CancelDoubleClick = true;
-
-			return;
-		}
-		else if (g_ObjectInHand.Enabled)
+		if (g_ObjectInHand.Enabled)
 		{
 			canDrop = true;
 
@@ -338,7 +339,7 @@ void CGumpContainer::OnLeftMouseButtonUp()
 
 	if (canDrop && g_ObjectInHand.Enabled)
 	{
-		CONTAINER_OFFSET_RECT &r = g_ContainerOffset[Graphic].rect;
+		const CContainerOffsetRect &r = g_ContainerOffset[Graphic].Rect;
 
 		bool doubleDraw = false;
 		ushort graphic = g_ObjectInHand.GetDrawGraphic(doubleDraw);

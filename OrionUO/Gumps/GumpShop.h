@@ -13,7 +13,6 @@
 class CGumpShop : public CGump
 {
 	SETGET(bool, IsBuyGump, false);
-	SETGET(bool, Visible, false);
 
 private:
 	static const int ID_GB_BUTTON_ACCEPT = 1;
@@ -43,6 +42,7 @@ public:
 	GUMP_BUTTON_EVENT_H;
 	GUMP_SCROLL_BUTTON_EVENT_H;
 
+	virtual void OnLeftMouseButtonUp();
 	virtual bool OnLeftMouseButtonDoubleClick();
 };
 //----------------------------------------------------------------------------------

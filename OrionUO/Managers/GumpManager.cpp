@@ -171,6 +171,7 @@ void CGumpManager::AddGump(CGump *obj)
 			case GT_CONTAINER:
 			{
 				ushort sound = g_ContainerOffset[obj->Graphic].OpenSound;
+
 				if (sound)
 					g_Orion.PlaySoundEffect(sound);
 
@@ -291,7 +292,7 @@ CGump *CGumpManager::GetGump(const uint &serial, const uint &id, const GUMP_TYPE
 	{
 		if (gump->GumpType == type)
 		{
-			if (type == GT_SHOP || type == GT_TARGET_SYSTEM)
+			if (type == GT_SHOP || type == GT_TARGET_SYSTEM || type == GT_CUSTOM_HOUSE)
 				break;
 			else if (type == GT_TRADE)
 			{
@@ -380,13 +381,15 @@ void CGumpManager::RemoveGump(CGump *obj)
 			selobj->Opened = false;
 		}
 	}
-	if (obj->Graphic > 0 && obj->Graphic < CONTAINERS_COUNT)
+
+	if (obj->GumpType == GT_CONTAINER && obj->Graphic > 0 && obj->Graphic < g_ContainerOffset.size())
 	{
 		ushort sound = g_ContainerOffset[obj->Graphic].CloseSound;
 
 		if (sound)
 			g_Orion.PlaySoundEffect(sound);
 	}
+
 	obj->m_Next = NULL;
 	obj->m_Prev = NULL;
 	delete obj;
@@ -516,7 +519,10 @@ void CGumpManager::Draw(const bool &blocked)
 		if (blocked == gump->Blocked)
 		{
 			if (gump->CanBeDisplayed())
-				gump->Draw();
+			{
+				if (g_CustomHouseGump == NULL || gump == g_CustomHouseGump)
+					gump->Draw();
+			}
 
 			if (gump->GumpType == GT_MENUBAR)
 				menuBarGump = gump;
@@ -525,7 +531,7 @@ void CGumpManager::Draw(const bool &blocked)
 		gump = next;
 	}
 
-	if (menuBarGump != NULL)
+	if (menuBarGump != NULL && (g_CustomHouseGump == NULL || menuBarGump == g_CustomHouseGump))
 		menuBarGump->Draw();
 }
 //----------------------------------------------------------------------------------
@@ -542,7 +548,10 @@ void CGumpManager::Select(const bool &blocked)
 		if (blocked == gump->Blocked)
 		{
 			if (gump->CanBeDisplayed())
-				gump->Select();
+			{
+				if (g_CustomHouseGump == NULL || gump == g_CustomHouseGump)
+					gump->Select();
+			}
 
 			if (gump->GumpType == GT_MENUBAR)
 				menuBarGump = gump;
@@ -551,7 +560,7 @@ void CGumpManager::Select(const bool &blocked)
 		gump = next;
 	}
 
-	if (menuBarGump != NULL && blocked == menuBarGump->Blocked)
+	if (menuBarGump != NULL && blocked == menuBarGump->Blocked && (g_CustomHouseGump == NULL || menuBarGump == g_CustomHouseGump))
 		menuBarGump->Select();
 }
 //----------------------------------------------------------------------------------
@@ -1185,6 +1194,10 @@ void CGumpManager::Load(const string &path)
 				case GT_SKILLS:
 				{
 					gump = new CGumpSkills(g_PlayerSerial, gumpX, gumpY, gumpMinimized, file.ReadInt16LE());
+					gump->Visible = false;
+
+					g_SkillsRequested = true;
+					CPacketSkillsRequest(g_PlayerSerial).Send();
 
 					break;
 				}

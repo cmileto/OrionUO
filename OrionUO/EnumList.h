@@ -306,7 +306,8 @@ enum GUMP_TYPE
 	GT_COMBAT_BOOK,				//!Гамп книги абилок 100%
 	GT_ABILITY,					//!Гамп абилки 100%
 	GT_RACIAL_ABILITIES_BOOK,	//!Гамп книги рассовых абилок 100%
-	GT_RACIAL_ABILITY			//!Гамп рассовой абилки 100%
+	GT_RACIAL_ABILITY,			//!Гамп рассовой абилки 100%
+	GT_CUSTOM_HOUSE
 };
 //----------------------------------------------------------------------------------
 //!Типы объектов гампов
@@ -807,6 +808,15 @@ enum CLICK_OBJECT_TYPE
 	COT_GAME_OBJECT,
 	COT_STATIC,
 	COT_GUMP
+};
+//----------------------------------------------------------------------------------
+enum CUSTOM_HOUSE_UPDATE_TYPE
+{
+	CHUT_UPDATE = 1,
+	CHUT_REMOVE,
+	CHUT_UPDATE_MULTI_POS,
+	CHUT_CONSTRUCT_BEGIN,
+	CHUT_CONSTRUCT_END
 };
 //----------------------------------------------------------------------------------
 enum MACRO_CODE
